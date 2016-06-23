@@ -1,5 +1,5 @@
 
-FROM erlang:19.0-rc2
+FROM erlang:19
 
 # elixir expects utf8.
 ENV ELIXIR_VERSION="v1.3.0" \
