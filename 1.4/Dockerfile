@@ -1,4 +1,3 @@
-
 FROM erlang:19
 
 # elixir expects utf8.
