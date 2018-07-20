@@ -50,7 +50,7 @@ self="${BASH_SOURCE##*/}"
 cat <<-EOH
 # this file is generated via https://github.com/c0b/docker-elixir/blob/$(fileCommit "$self")/$self
 
-Maintainers: Mr C0B <denc716@gmail.com> (@c0b)
+Maintainers: . <c0b@users.noreply.github.com> (@c0b)
 GitRepo: https://github.com/c0b/docker-elixir.git
 EOH
 
@@ -71,7 +71,7 @@ for version in "${versions[@]}"; do
 	done
 	versionAliases+=( $version ${aliases[$version]:-} )
 
-	for variant in '' slim alpine; do
+	for variant in '' slim alpine otp-21{,-alpine}; do
 		dir="$version${variant:+/$variant}"
 		[ -f "$dir/Dockerfile" ] || continue
 
