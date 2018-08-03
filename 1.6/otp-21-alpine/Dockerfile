@@ -4,7 +4,7 @@ FROM erlang:21-alpine
 ENV ELIXIR_VERSION="v1.6.6" \
 	LANG=C.UTF-8
 
-# the OTP_VERSION is env set from erlang images, has values like `21.1.3`
+# the OTP_VERSION is env set from erlang images, has values like `21.0.3`
 RUN set -xe \
 	&& OTP_MAJOR_VERSION="${OTP_VERSION%%.*}" \
 	&& ELIXIR_DOWNLOAD_URL="https://repo.hex.pm/builds/elixir/${ELIXIR_VERSION}-otp-${OTP_MAJOR_VERSION}.zip" \
