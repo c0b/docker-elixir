@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-declare -a -r versions=( 1.7 1.6 1.5 1.4 1.3 )
+declare -a -r versions=( 1.7 1.6 1.5 1.4 )
 declare -A -r aliases=(
 	[1.7]='latest'
 )
