@@ -21,7 +21,7 @@ RUN set -xe \
 	&& rm elixir-src.tar.gz \
 	&& cd /usr/local/src/elixir \
 	&& make install clean \
-	&& apt-get purge -y $buildDeps \
-	&& apt-get clean -y
+	&& apt-get purge -y --auto-remove $buildDeps \
+	&& rm -rf /var/lib/apt/lists/*
 
 CMD ["iex"]
