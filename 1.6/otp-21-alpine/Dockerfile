@@ -8,7 +8,7 @@ ENV ELIXIR_VERSION="v1.6.6" \
 RUN set -xe \
 	&& OTP_MAJOR_VERSION="${OTP_VERSION%%.*}" \
 	&& ELIXIR_DOWNLOAD_URL="https://repo.hex.pm/builds/elixir/${ELIXIR_VERSION}-otp-${OTP_MAJOR_VERSION}.zip" \
-	&& ELIXIR_DOWNLOAD_SHA256="883cf0cd6e46e726bbcf41e281a8987d2fbdbe0075a60f8acde52f2a0ac1cc7e" \
+	&& ELIXIR_DOWNLOAD_SHA256="72ba3a058c1e0986f0eaec738739e3ff8852b2f73c45b76ad9d9e0f2b4b8a729" \
 	&& buildDeps=' \
 		ca-certificates \
 		curl \
