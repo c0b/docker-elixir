@@ -6,9 +6,13 @@ env:
   - DIR=1.8
   - DIR=1.8 VARIANT=slim
   - DIR=1.8 VARIANT=alpine
+  - DIR=1.8 VARIANT=otp-21.2
+  - DIR=1.8 VARIANT=otp-21.2-alpine
   - DIR=1.7
   - DIR=1.7 VARIANT=slim
   - DIR=1.7 VARIANT=alpine
+  - DIR=1.7 VARIANT=otp-21.2
+  - DIR=1.7 VARIANT=otp-21.2-alpine
   - DIR=1.6
   - DIR=1.6 VARIANT=slim
   - DIR=1.6 VARIANT=alpine
