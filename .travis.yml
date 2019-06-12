@@ -3,9 +3,14 @@ services: docker
 
 env:
   - DIR=master
+  - DIR=1.9
+  - DIR=1.9 VARIANT=slim
+  - DIR=1.9 VARIANT=alpine
   - DIR=1.8
   - DIR=1.8 VARIANT=slim
   - DIR=1.8 VARIANT=alpine
+  - DIR=1.8 VARIANT=otp-22
+  - DIR=1.8 VARIANT=otp-22-alpine
   - DIR=1.8 VARIANT=otp-21.2
   - DIR=1.8 VARIANT=otp-21.2-alpine
   - DIR=1.7
