@@ -27,6 +27,7 @@ env:
   - DIR=1.5 VARIANT=slim
   - DIR=1.5 VARIANT=alpine
   - DIR=1.5 VARIANT=otp-18-slim
+  - DIR=1.5 VARIANT=otp-19-slim
 
 install:
   - curl -fsSL https://github.com/docker-library/official-images/archive/master.tar.gz | {
