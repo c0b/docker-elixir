@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -e
+
+BUILD_MATRIX_FILE="${1:-build-matrix.txt}"
+
+cat "$BUILD_MATRIX_FILE" | while IFS=$'\t' read -r ELIXIR_VERSION OTP_MAJOR_VERSION ELIXIR_DOWNLOAD_SHA256 TAGS VARIATIONS; do
+    TAGS="$(echo $TAGS | tr "," "\n")"
+    VARIATIONS="$(echo $VARIATIONS | tr "," "\n")"
+
+    for VARIATION in $VARIATIONS; do
+        TAG_ARGS=""
+
+        if [ "$VARIATION" == "default" ]; then
+            VARIATION_MODIFIER=""
+        else
+            VARIATION_MODIFIER="-${VARIATION}"
+        fi
+        
+        for TAG in $TAGS; do
+            if [ "$VARIATION" != "default" ]; then
+                if [ "$TAG" == "latest" ]; then
+                    TAG="$VARIATION"
+                else
+                    TAG="${TAG}-${VARIATION}"
+                fi
+            fi
+            TAG_ARGS="${TAG_ARGS} -t elixir:${TAG}"
+        done
+
+        echo "Building elixir:$TAG"
+
+        docker build $TAG_ARGS \
+            --build-arg ELIXIR_VERSION="$ELIXIR_VERSION" \
+            --build-arg OTP_MAJOR_VERSION="$OTP_MAJOR_VERSION" \
+            --build-arg ELIXIR_DOWNLOAD_SHA256="$ELIXIR_DOWNLOAD_SHA256" \
+            --build-arg VARIATION_MODIFIER="$VARIATION_MODIFIER" \
+            --quiet \
+            .
+
+        docker run "elixir:${TAG[0]}" elixir --version > /dev/null 2>&1 && echo "IEx Works"
+    done
+done
