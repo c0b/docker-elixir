@@ -1,0 +1,207 @@
+#!/bin/bash
+
+set -e
+
+function load_builds {
+    curl -s https://repo.hex.pm/builds/elixir/builds.txt
+}
+
+function is_v0 {
+    [ "$(echo "$1" | cut -c1-2)" == "v0" ]
+}
+
+function has_otp {
+    [[ "$1" =~ -otp- ]]
+}
+
+function is_stable {
+    [[ "$1" =~ ^v ]] && [[ ! "$1" =~ rc ]]
+}
+
+function extract_minor {
+    [[ "$1" =~ ^(v[0-9]+\.[0-9]+)\.[0-9]+$ ]]
+}
+
+function extract_major {
+    [[ "$1" =~ ^(v[0-9]+)\.[0-9]+\.[0-9]+$ ]]
+}
+
+function full_version_or_no_version {
+    [[ "$1" =~ ^[^v] ]] || [[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]
+}
+
+function variations_for_otp {
+    case "$1" in
+        1[0-9])
+            echo "default,slim"
+            ;;
+        2[0-9])
+            echo "default,slim,alpine"
+            ;;
+    esac
+}
+
+function enrich_otp_information {
+    while IFS=" " read -r VERSION_NAME _ _; do
+        if has_otp "$VERSION_NAME"; then
+            echo "$VERSION_NAME $VERSION_NAME"
+        elif is_v0 "$VERSION_NAME"; then
+            echo "$VERSION_NAME $VERSION_NAME-otp-17"
+        fi
+    done
+}
+
+function split_otp_version {
+    while IFS=" " read -r VERSION_NAME VERSION_NAME_WITH_OTP; do
+        [[ "$VERSION_NAME_WITH_OTP" =~ ^(.+)-otp-(.+)$ ]]
+        echo "$VERSION_NAME ${BASH_REMATCH[1]} ${BASH_REMATCH[2]}"
+    done
+}
+
+function add_base_tags {
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION; do
+        echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $ELIXIR_VERSION"
+    done
+}
+
+function remove_partial_versions {
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION TAGS; do
+        if full_version_or_no_version "$ELIXIR_VERSION"; then
+            echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS"
+        fi
+    done
+}
+
+function add_minor_tag {
+    LAST_MINOR=""
+
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION TAGS; do
+        if extract_minor "$ELIXIR_VERSION"; then
+            MINOR="${BASH_REMATCH[1]}"
+
+            # Same Minor as before
+            if [ "$MINOR" == "$LAST_MINOR" ]; then
+                echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS"
+            # New minor with no separate entry in list
+            else
+                echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS,$MINOR"
+                LAST_MINOR="$MINOR"
+            fi
+        else
+            echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS"
+        fi
+    done
+}
+
+function add_major_tag {
+    LAST_MAJOR=""
+
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION TAGS; do
+        if extract_major "$ELIXIR_VERSION"; then
+            MAJOR="${BASH_REMATCH[1]}"
+
+            # Same major as before
+            if [ "$MAJOR" == "$LAST_MAJOR" ]; then
+                echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS"
+            # New major with no separate entry in list
+            else
+                echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS,$MAJOR"
+                LAST_MAJOR="$MAJOR"
+            fi
+        else
+            echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS"
+        fi
+    done
+}
+
+function add_latest_tag {
+    FOUND=0
+
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION TAGS; do
+        if [ $FOUND -eq 0 ] && is_stable "$ELIXIR_VERSION"; then
+            FOUND=1
+            echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS,latest"
+        else
+            echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS"
+        fi
+    done
+}
+
+function add_tags_otp_suffix {
+    LAST_VERSION=""
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION TOP_LEVEL_TAGS; do
+        if [ "$ELIXIR_VERSION" != "$LAST_VERSION" ]; then
+            echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TOP_LEVEL_TAGS"
+            LAST_VERSION="$ELIXIR_VERSION"
+        fi
+
+        TAGS=""
+        for TOP_LEVEL_TAG in ${TOP_LEVEL_TAGS//,/ }; do
+            TAGS="$TAGS,$TOP_LEVEL_TAG-otp-$OTP_MAJOR_VERSION"
+        done
+        TAGS="${TAGS:1}"
+
+        echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS"
+    done
+}
+
+function add_variations {
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION TAGS; do
+        for VARIATION in $(variations_for_otp "$OTP_MAJOR_VERSION" | sed "s/,/ /g"); do
+            if [ "$VARIATION" == "default" ]; then
+                echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $TAGS $VARIATION"
+            else
+                VARIATION_TAGS=""
+                for TAG in ${TAGS//,/ }; do
+                    if [ "$TAG" == "latest" ]; then
+                        VARIATION_TAGS="$VARIATION_TAGS,$VARIATION"
+                    else
+                        VARIATION_TAGS="$VARIATION_TAGS,$TAG-$VARIATION"
+                    fi
+                done
+                VARIATION_TAGS="${VARIATION_TAGS:1}"
+                echo "$VERSION_NAME $ELIXIR_VERSION $OTP_MAJOR_VERSION $VARIATION_TAGS $VARIATION"
+            fi
+        done
+    done
+}
+
+function build {
+    while IFS=" " read -r VERSION_NAME ELIXIR_VERSION OTP_MAJOR_VERSION TAGS VARIATION; do
+        TAG_ARGS=()
+        for TAG in ${TAGS//,/ }; do
+            TAG_ARGS+=(-t "elixir:${TAG}")
+        done
+
+        if [ "$VARIATION" == "default" ]; then
+            VARIATION_MODIFIER=""
+        else
+            VARIATION_MODIFIER="-${VARIATION}"
+        fi
+
+        echo "Building elixir:$TAG"
+
+        docker build "${TAG_ARGS[@]}" \
+            --build-arg VERSION_NAME="$VERSION_NAME" \
+            --build-arg OTP_MAJOR_VERSION="$OTP_MAJOR_VERSION" \
+            --build-arg VARIATION_MODIFIER="$VARIATION_MODIFIER" \
+            --quiet \
+            .
+
+        docker run "elixir:${TAG[0]}" elixir --version > /dev/null 2>&1 && echo "Elixir Responds"
+    done
+}
+
+
+load_builds \
+    | enrich_otp_information \
+    | split_otp_version \
+    | add_base_tags \
+    | tac \
+    | remove_partial_versions \
+    | add_minor_tag \
+    | add_major_tag \
+    | add_latest_tag \
+    | add_tags_otp_suffix \
+    | add_variations \
+    | build
