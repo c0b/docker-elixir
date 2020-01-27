@@ -1,9 +1,9 @@
 #!/bin/bash
 set -eu
 
-declare -a -r versions=( 1.9 1.8 1.7 1.6 1.5 1.4 )
+declare -a -r versions=( 1.10 1.9 1.8 1.7 1.6 1.5 1.4 )
 declare -A -r aliases=(
-	[1.9]='latest'
+	[1.10]='latest'
 )
 
 # get the most recent commit which modified any of "$@"
