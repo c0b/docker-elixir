@@ -6,6 +6,8 @@ env:
   - DIR=1.10
   - DIR=1.10 VARIANT=slim
   - DIR=1.10 VARIANT=alpine
+  - DIR=1.10 VARIANT=otp-23
+  - DIR=1.10 VARIANT=otp-23-alpine
   - DIR=1.9
   - DIR=1.9 VARIANT=slim
   - DIR=1.9 VARIANT=alpine
