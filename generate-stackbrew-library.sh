@@ -48,10 +48,10 @@ extractVersion() {
 self="${BASH_SOURCE##*/}"
 
 cat <<-EOH
-# this file is generated via https://github.com/c0b/docker-elixir/blob/$(fileCommit "$self")/$self
+# this file is generated via https://github.com/erlef/docker-elixir/blob/$(fileCommit "$self")/$self
 
 Maintainers: . <c0b@users.noreply.github.com> (@c0b)
-GitRepo: https://github.com/c0b/docker-elixir.git
+GitRepo: https://github.com/erlef/docker-elixir.git
 EOH
 
 for version in "${versions[@]}"; do
