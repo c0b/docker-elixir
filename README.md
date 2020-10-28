@@ -4,7 +4,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/_/elixir.svg?style=flat-square)](https://hub.docker.com/_/elixir/)
 [![Image Layers](https://images.microbadger.com/badges/image/elixir.svg)](https://microbadger.com/images/elixir "Get your own image badge on microbadger.com")
 
-[![Build Status](https://travis-ci.org/c0b/docker-elixir.svg?branch=master)](https://travis-ci.org/c0b/docker-elixir)
+[![Build Status](https://travis-ci.org/erlef/docker-elixir.svg?branch=master)](https://travis-ci.org/erlef/docker-elixir)
 
 This is for elixir latest stable image and next -dev image.
 
