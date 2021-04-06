@@ -3,6 +3,9 @@ services: docker
 
 env:
   - DIR=master
+  - DIR=1.12
+  - DIR=1.12 VARIANT=slim
+  - DIR=1.12 VARIANT=alpine
   - DIR=1.11
   - DIR=1.11 VARIANT=slim
   - DIR=1.11 VARIANT=alpine
