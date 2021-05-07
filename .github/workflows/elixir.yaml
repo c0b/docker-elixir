@@ -1,0 +1,29 @@
+name: elixir
+
+on: [push, pull_request]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        elixir: ['DIR=1.12', 'DIR=1.12 VARIANT=slim', 'DIR=1.12 VARIANT=alpine',
+              'DIR=1.11', 'DIR=1.11 VARIANT=slim', 'DIR=1.11 VARIANT=alpine',
+              'DIR=1.10', 'DIR=1.10 VARIANT=slim', 'DIR=1.10 VARIANT=alpine',
+              'DIR=1.9', 'DIR=1.9 VARIANT=slim', 'DIR=1.9 VARIANT=alpine',
+              'DIR=1.8', 'DIR=1.8 VARIANT=slim', 'DIR=1.8 VARIANT=alpine', 'DIR=1.8 VARIANT=otp-22', 'DIR=1.8 VARIANT=otp-22-alpine', 'DIR=1.8 VARIANT=otp-21.2', 'DIR=1.8 VARIANT=otp-21.2-alpine',
+              'DIR=1.7', 'DIR=1.7 VARIANT=slim', 'DIR=1.7 VARIANT=alpine', 'DIR=1.7 VARIANT=otp-21.2', 'DIR=1.7 VARIANT=otp-21.2-alpine'
+              ]
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: |
+           ${{ matrix.elixir }}
+           git clone https://github.com/docker-library/official-images.git ~/official-images
+           cd "$DIR"
+           eval $(awk '/ELIXIR_VERSION=/ { sub(/@/, "-", $2); print $2; exit }' ${VARIANT:-.}/Dockerfile)
+           image="elixir:${ELIXIR_VERSION#v}${VARIANT:+-$VARIANT}"
+           docker build --pull -t "$image" "${VARIANT:-.}"
+           ~/official-images/test/run.sh "$image"
+           docker images
