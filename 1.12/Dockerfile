@@ -13,6 +13,8 @@ RUN set -xe \
 	&& tar -xzC /usr/local/src/elixir --strip-components=1 -f elixir-src.tar.gz \
 	&& rm elixir-src.tar.gz \
 	&& cd /usr/local/src/elixir \
-	&& make install clean
+	&& make install clean \
+	&& find /usr/local/src/elixir/ -type f -not -regex "/usr/local/src/elixir/lib/[^\/]*/lib.*" -exec rm -rf {} + \
+	&& find /usr/local/src/elixir/ -type d -depth -empty -delete
 
 CMD ["iex"]

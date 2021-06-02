@@ -20,6 +20,8 @@ RUN set -xe \
 	&& rm elixir-src.tar.gz \
 	&& cd /usr/local/src/elixir \
 	&& make install clean \
+	&& find /usr/local/src/elixir/ -type f -not -regex "/usr/local/src/elixir/lib/[^\/]*/lib.*" -exec rm -rf {} + \
+	&& find /usr/local/src/elixir/ -type d -depth -empty -delete \
 	&& apk del .build-deps
 
 CMD ["iex"]
