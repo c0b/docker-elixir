@@ -72,7 +72,7 @@ for version in "${versions[@]}"; do
 	done
 	versionAliases+=( $version ${aliases[$version]:-} )
 
-	for variant in '' slim alpine otp-{21,22,25}{,-alpine,-slim}; do
+	for variant in '' slim alpine otp-24 otp-24-alpine otp-24-slim otp-{21,22,25}{,-alpine,-slim}; do
 		dir="$version${variant:+/$variant}"
 		[ -f "$dir/Dockerfile" ] || continue
 
